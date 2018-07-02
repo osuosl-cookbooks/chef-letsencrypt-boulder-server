@@ -6,6 +6,10 @@ describe 'osl-letsencrypt-boulder-server::default' do
       cached(:chef_run) do
         ChefSpec::SoloRunner.new(p) do |node|
           node.set['boulder']['host_aliases'] = %w(example.com foo.org)
+          node.set['boulder']['host_aliases_advanced'] = {
+            'new.com' => '10.0.0.3',
+            'another.org' => '10.0.0.4'
+          }
         end.converge(described_recipe)
       end
       before do
@@ -26,6 +30,12 @@ describe 'osl-letsencrypt-boulder-server::default' do
         it do
           expect(chef_run).to render_file('/etc/dnsmasq.conf').with_content(%r{^address=/#{host}/10.0.0.2$})
         end
+      end
+      it do
+        expect(chef_run).to render_file('/etc/dnsmasq.conf').with_content(%r{^address=/new.com/10.0.0.3$})
+      end
+      it do
+        expect(chef_run).to render_file('/etc/dnsmasq.conf').with_content(%r{^address=/another.org/10.0.0.4$})
       end
       it do
         expect(chef_run.template('/etc/dnsmasq.conf')).to notify('service[dnsmasq]').to(:restart).immediately
@@ -52,8 +62,14 @@ describe 'osl-letsencrypt-boulder-server::default' do
       when CENTOS_7
         %w(boulder boulder-rabbitmq boulder-mysql).each do |host|
           it do
-            expect(chef_run).to_not render_file('/etc/dnsmasq.conf').with_content(%r{^address=/#{host}/127.0.0.1$})
+            expect(chef_run).to_not render_file('/etc/dnsmasq.conf').with_content(%r{^address=/#{host}/10.0.0.2$})
           end
+        end
+        it do
+          expect(chef_run).to render_file('/etc/dnsmasq.conf').with_content(%r{^address=/new.com/10.0.0.3$})
+        end
+        it do
+          expect(chef_run).to render_file('/etc/dnsmasq.conf').with_content(%r{^address=/another.org/10.0.0.4$})
         end
         it do
           expect(chef_run).to create_directory('/opt/boulder')
@@ -83,8 +99,14 @@ describe 'osl-letsencrypt-boulder-server::default' do
       when CENTOS_6
         %w(boulder boulder-rabbitmq boulder-mysql).each do |host|
           it do
-            expect(chef_run).to render_file('/etc/dnsmasq.conf').with_content(%r{^address=/#{host}/127.0.0.1$})
+            expect(chef_run).to render_file('/etc/dnsmasq.conf').with_content(%r{^address=/#{host}/10.0.0.2$})
           end
+        end
+        it do
+          expect(chef_run).to render_file('/etc/dnsmasq.conf').with_content(%r{^address=/new.com/10.0.0.3$})
+        end
+        it do
+          expect(chef_run).to render_file('/etc/dnsmasq.conf').with_content(%r{^address=/another.org/10.0.0.4$})
         end
         it do
           expect(chef_run).to create_directory('/opt/go/src/github.com/letsencrypt/boulder')

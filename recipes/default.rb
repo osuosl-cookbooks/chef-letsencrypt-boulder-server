@@ -23,11 +23,13 @@ template '/etc/dnsmasq.conf' do
   source 'dnsmasq.erb'
   if node['platform_version'].to_i == 6
     variables(
-      hosts: %w(boulder boulder-rabbitmq boulder-mysql) + node['boulder']['host_aliases']
+      hosts: %w(boulder boulder-rabbitmq boulder-mysql) + node['boulder']['host_aliases'],
+      hosts_advanced: node['boulder']['host_aliases_advanced']
     )
   else
     variables(
-      hosts: node['boulder']['host_aliases']
+      hosts: node['boulder']['host_aliases'],
+      hosts_advanced: node['boulder']['host_aliases_advanced']
     )
   end
   notifies :restart, 'service[dnsmasq]', :immediately
