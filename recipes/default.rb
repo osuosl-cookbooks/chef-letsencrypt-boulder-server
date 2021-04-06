@@ -3,7 +3,7 @@
 # Cookbook:: chef-letsencrypt-boulder-server
 # Recipe:: default
 #
-# Copyright:: 2015-2020, Schuberg Philis
+# Copyright:: 2015-2021, Schuberg Philis
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -80,7 +80,7 @@ ruby_block 'boulder_limit' do
     limit = ::YAML.load ::File.read "#{boulderdir}/test/rate-limit-policies.yml"
     limit['certificatesPerName']['threshold'] = 999
     limit['pendingAuthorizationsPerAccount']['threshold'] = 99
-    ::File.write("#{boulderdir}/test/rate-limit-policies.yml", limit.to_yaml)
+    ::File.write("#{boulderdir}/test/rate-limit-policies.yml", YAML.dump(limit))
   end
 end
 
@@ -88,7 +88,7 @@ ruby_block 'boulder_dns' do
   block do
     dns = ::YAML.load ::File.read "#{boulderdir}/docker-compose.yml"
     dns['services']['boulder']['environment']['FAKE_DNS'] = node['ipaddress']
-    ::File.write("#{boulderdir}/docker-compose.yml", dns.to_yaml)
+    ::File.write("#{boulderdir}/docker-compose.yml", YAML.dump(dns))
   end
 end
 
